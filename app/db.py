@@ -2,7 +2,10 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-engine = create_engine()  #paste url here
+#still need to abstract the specifics
+db_url = "postgres://postgres:password@localhost:5432/ballot"
+
+engine = create_engine(db_url) 
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
