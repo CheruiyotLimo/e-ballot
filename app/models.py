@@ -6,8 +6,8 @@ from sqlalchemy.sql.expression import text, null
 class Users(Base):
     __tablename__ = "users"
     
-    id = Column(Integer, nullable=False)
-    reg_num = Column(String, primary_key=True, nullable=False)
+    id = Column(Integer, nullable=False, primary_key = True)
+    reg_num = Column(String, nullable=False)
     name = Column(String, nullable=False)
     email = Column(String, nullable= False, unique=True)
     password = Column(String, nullable= False)
