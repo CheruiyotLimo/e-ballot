@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Depends, HTTPException, status
 from .db import engine, get_db
 from sqlalchemy.orm import Session
-from . import models, schemas
+from . import models, schemas, utils
 
 
 app = FastAPI()
@@ -28,10 +28,11 @@ def register_user(data: schemas.UserCreate, db: Session = Depends(get_db)):
     if user_email.first() or user_reg_no.first():
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="A user already exists with similar email or registration number!!")
     
+    new_password = utils.hash(data.password)
+    data.password = new_password
     data = models.Users(**data.dict())
 
     db.add(data)
     db.commit()
     db.refresh(data)
     return data
-    # return f"the account was succesfully created"
