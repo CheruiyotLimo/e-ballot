@@ -21,3 +21,7 @@ class UserReturn(BaseModel):
 class UserLogin(BaseModel):
     username: str
     password: str
+
+class TokenData(BaseModel):
+    id: Optional[str] = None
+    reg_num: Optional[str] = None
