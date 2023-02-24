@@ -2,6 +2,7 @@ from fastapi import FastAPI, Depends, HTTPException, status, APIRouter
 from ..db import engine, get_db
 from sqlalchemy.orm import Session
 from .. import models, schemas, utils
+# from ...Scripts import scripts
 
 
 router = APIRouter(
@@ -20,6 +21,11 @@ def get_users(id: int, db: Session = Depends(get_db)):
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=schemas.UserReturn)
 def register_user(data: schemas.UserCreate, db: Session = Depends(get_db)):
+
+    # Verify it is a valid email address
+    # if not scripts.email_verifier(data.email):
+    #     raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="The email provided is not a valid email address")
+
     user_email = db.query(models.Users).filter(models.Users.email == data.email)
     user_reg_no = db.query(models.Users).filter(models.Users.reg_num == data.reg_num)
 
