@@ -1,7 +1,8 @@
 from fastapi import FastAPI, Depends, HTTPException, status, APIRouter
 from ..db import engine, get_db
 from sqlalchemy.orm import Session
-from .. import models, schemas, utils
+from .. import models, schemas, utils, oauth2
+from fastapi.security import OAuth2PasswordRequestForm
 
 
 router = APIRouter(
@@ -10,7 +11,7 @@ router = APIRouter(
 )
 
 @router.post("/", status_code=status.HTTP_200_OK)
-def user_login(user_credential: schemas.UserLogin, db: Session = Depends(get_db)):
+def user_login(user_credential: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     
     # Query for user with sspecified email
     user = db.query(models.Users).filter(models.Users.email==user_credential.username).first()
@@ -24,7 +25,9 @@ def user_login(user_credential: schemas.UserLogin, db: Session = Depends(get_db)
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Wrong password")
     
     # To implement: generation of a new token.
+    access_token = oauth2.create_access_token({"user_id": user.id, "reg_num": user.reg_num})
+
 
     # Return success message
     print(user.name)
-    return "Successfully logged in."
+    return {"access_token": access_token, "token_type": "bearer"}
