@@ -19,5 +19,6 @@ class Hospital(Base):
 
     id = Column(Integer, nullable=False, primary_key=True)
     name = Column(String, nullable=False)
+    county_name = Column(String, nullable=False)
     county_num = Column(Integer, nullable=False)
     slots = Column(Integer, nullable=False)
