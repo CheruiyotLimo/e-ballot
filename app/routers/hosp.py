@@ -20,4 +20,7 @@ def get_all_hospitals(current_user: int = Depends(oauth2.get_current_user), db =
 
     hosps = db.query(models.Hospital).filter(models.Hospital.name.contains(search)).limit(limit).offset(skip).all()
 
+    if not hosps:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="There are currently no open hospitals.")
+
     return hosps
