@@ -25,3 +25,8 @@ class UserLogin(BaseModel):
 class TokenData(BaseModel):
     id: Optional[str] = None
     reg_num: Optional[str] = None
+
+class HospReturn(BaseModel):
+    name: str
+    county_name: str
+    slots: int
