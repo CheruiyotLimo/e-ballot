@@ -12,7 +12,7 @@ class Users(Base):
     email = Column(String, nullable= False, unique=True)
     password = Column(String, nullable= False)
     created_at = Column(TIMESTAMP(timezone=True), nullable = False, server_default=text("now()"))
-    choice = Column(Integer, ForeignKey("hosp.id", ondelete="CASCADE"), nullable=False)
+    choice = Column(Integer, ForeignKey("hosp.id", ondelete="CASCADE"))
 
 class Hospital(Base):
     __tablename__ = "hosp"
