@@ -10,13 +10,13 @@ router = APIRouter(
 )
 
 # GET request for a user to receive all available hospital
-@router.get("/", response_model=schemas.HospReturn, status_code=status.HTTP_200_OK)
+@router.get("/", status_code=status.HTTP_200_OK)
 def get_all_hospitals(current_user: int = Depends(oauth2.get_current_user), db: Session = (Depends(get_db)), limit: int = 5, skip: int = 0, search: Optional[str] = ""):
     """
     GET request for a user to receive all available hospitals.
     with defined query parameters allowing for modification of returned results.
     """
-    print(f"Active user: {current_user.name}")
+    print(f"Currently logged in as: {current_user.name}")
 
     hosps = db.query(models.Hospital).filter(models.Hospital.name.contains(search)).limit(limit).offset(skip).all()
 
