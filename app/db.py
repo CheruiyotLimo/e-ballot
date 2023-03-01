@@ -3,10 +3,9 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import psycopg2
 from psycopg2.extras import RealDictCursor
-import time
+from .config import settings
 
-#still need to abstract the specifics
-db_url = "postgresql://postgres:password@localhost:5432/ballot"
+db_url = f"postgresql://{settings.database_username}:{settings.database_password}@{settings.database_hostname}:{settings.database_port}/{settings.database_name}"
 
 engine = create_engine(db_url) 
 
