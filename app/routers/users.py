@@ -12,6 +12,9 @@ router = APIRouter(
 
 @router.get("/{id}", response_model=schemas.UserReturn)
 def get_users(id: int, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
+    """
+    Get all the registered users.
+    """
     user = db.query(models.Users).filter(models.Users.id == id).first()
     print(current_user.email)
     if not user:
@@ -22,7 +25,7 @@ def get_users(id: int, db: Session = Depends(get_db), current_user: int = Depend
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=schemas.UserReturn)
 def register_user(data: schemas.UserCreate, db: Session = Depends(get_db)):
-
+    """Sign up a user to the system."""
     # Verify it is a valid email address
     # if not scripts.email_verifier(data.email):
     #     raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="The email provided is not a valid email address")
