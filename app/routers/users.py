@@ -27,16 +27,22 @@ def register_user(data: schemas.UserCreate, db: Session = Depends(get_db)):
     # if not scripts.email_verifier(data.email):
     #     raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="The email provided is not a valid email address")
 
+    # Check if provided email and/or registration number exists in database
     user_email = db.query(models.Users).filter(models.Users.email == data.email)
     user_reg_no = db.query(models.Users).filter(models.Users.reg_num == data.reg_num)
 
+    # Raise HTTP error if any exists.
     if user_email.first() or user_reg_no.first():
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="A user already exists with similar email or registration number!!")
     
+    # Hash password before storing in the database.
     new_password = utils.hash(data.password)
     data.password = new_password
+
+    # Convert provided dictionary into a model dictionary.
     data = models.Users(**data.dict())
 
+    # Add user to the database.
     db.add(data)
     db.commit()
     db.refresh(data)
