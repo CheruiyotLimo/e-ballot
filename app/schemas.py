@@ -26,7 +26,16 @@ class TokenData(BaseModel):
     id: Optional[str] = None
     reg_num: Optional[str] = None
 
+class HospCreate(BaseModel):
+    name: str
+    county_name: str
+    county_num: int
+    slots: int
+
 class HospReturn(BaseModel):
     name: str
     county_name: str
     slots: int
+
+class UserUpdate(BaseModel):
+    pass
