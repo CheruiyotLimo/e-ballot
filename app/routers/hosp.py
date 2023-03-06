@@ -59,7 +59,10 @@ def add_hospital(hosp: schemas.HospCreate, db: Session = Depends(get_db), curren
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="You are not authorized to make this change.")
     
-    #C
+    # Check if the hospital exists
+    hosp = db.query(models.Hospital).filter(models.Hospital.name == hosp.name).first()
+    if hosp:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Hospital already exists.")
     
     # Convert the dictionary to a model dictionary
     new_hosp = models.Hospital(**hosp.dict())
