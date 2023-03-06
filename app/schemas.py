@@ -9,6 +9,7 @@ class UserCreate(BaseModel):
     name: str
     email: EmailStr
     password: str
+    choice: Optional[int] = None
 
 class UserReturn(BaseModel):
     id: str
@@ -38,4 +39,4 @@ class HospReturn(BaseModel):
     slots: int
 
 class UserUpdate(BaseModel):
-    pass
+    hosp_id: Optional[int] = None
