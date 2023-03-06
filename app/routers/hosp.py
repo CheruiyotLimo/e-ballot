@@ -25,26 +25,28 @@ def get_all_hospitals(current_user: int = Depends(oauth2.get_current_user), db: 
 
     return hosps
 
-@router.put("/choice", status_code=status.HTTP_201_CREATED)
-def choose_hospital(hosp_id: int, current_user: int = Depends(oauth2.get_current_user), db: Session = Depends(get_db)):
+@router.patch("/choice", status_code=status.HTTP_201_CREATED)
+def choose_hospital(hosp: schemas.UserUpdate, current_user: int = Depends(oauth2.get_current_user), db: Session = Depends(get_db)):
     """POST request for a user to declare a hospital of their choice for placement."""
 
     print("123")
     # Query hosp database for the specified choice
-    choice = db.query(models.Hospital).filter(models.Hospital.id == hosp_id).first()
+    choice = db.query(models.Hospital).filter(models.Hospital.id == hosp.hosp_id).first()
 
     if not choice:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"There is no hospital with id {hosp_id}")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"There is no hospital with id {hosp.hosp_id}")
     print("tou")
     # Get current active user
     user = db.query(models.Users).filter(models.Users.email == current_user.email)
+    
+    if not user.first():
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+    
+    update_item = models.Users(**{"choice": hosp.hosp_id})
+    
+    user.update(update_item)
 
-    # Update their choices column
-    user.update({"choices": choice.id}, synchronize_session=False)  
-    print("me")
-    # Refresh the database
     db.commit()
-    db.refresh(user)
 
     return f"Your chose {choice}"
 
