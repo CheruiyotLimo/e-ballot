@@ -16,7 +16,7 @@ def get_all_hospitals(current_user: int = Depends(oauth2.get_current_user), db: 
     GET request for a user to receive all available hospitals.
     with defined query parameters allowing for modification of returned results.
     """
-    print(f"Currently logged in as: {current_user.name}")
+    # print(f"Currently logged in as: {current_user.name}")
 
     hosps = db.query(models.Hospital).filter(models.Hospital.name.contains(search)).limit(limit).offset(skip).all()
 
