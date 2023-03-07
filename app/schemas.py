@@ -39,4 +39,4 @@ class HospReturn(BaseModel):
     slots: int
 
 class UserUpdate(BaseModel):
-    hosp_id: Optional[int] = None
+    choice: int
