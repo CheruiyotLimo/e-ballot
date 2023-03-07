@@ -10,17 +10,18 @@ router = APIRouter(
     tags=["Users"]
 )
 
-@router.get("/{id}", response_model=schemas.UserReturn)
-def get_users(id: int, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
+@router.get("/", response_model=list[schemas.UserReturn])
+def get_users( db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
     """
     Get all the registered users.
     """
-    user = db.query(models.Users).filter(models.Users.id == id).first()
-    print(current_user.email)
-    if not user:
+    users = db.query(models.Users).all()
+
+    # print(current_user.email)
+    if not users:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"The user with id {id} doesn,t exist")
-    print(user)
-    return user
+    # print(users)
+    return users
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=schemas.UserReturn)
