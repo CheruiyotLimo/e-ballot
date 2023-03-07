@@ -69,6 +69,9 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     #Query the db for the user
     user = db.query(models.Users).filter(models.Users.id == token_data.id).first()
 
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="You need to log in first")
+    
     # Return the user
     print(f"Current active user: {user.name}")
     return user
