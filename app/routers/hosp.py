@@ -11,7 +11,7 @@ router = APIRouter(
 
 # GET request for a user to receive all available hospital
 @router.get("/", status_code=status.HTTP_200_OK)
-def get_all_hospitals(current_user: int = Depends(oauth2.get_current_user), db: Session = (Depends(get_db)), limit: int = 5, skip: int = 0, search: Optional[str] = ""):
+def get_all_hospitals(current_user: int = Depends(oauth2.get_current_user), db: Session = (Depends(get_db)), limit: int = 10, skip: int = 0, search: Optional[str] = ""):
     """
     GET request for a user to receive all available hospitals.
     with defined query parameters allowing for modification of returned results.
@@ -25,30 +25,30 @@ def get_all_hospitals(current_user: int = Depends(oauth2.get_current_user), db: 
 
     return hosps
 
-@router.patch("/choice", status_code=status.HTTP_201_CREATED)
-def choose_hospital(hosp: schemas.UserUpdate, current_user: int = Depends(oauth2.get_current_user), db: Session = Depends(get_db)):
+@router.put("/choice/{hosp_id}", status_code=status.HTTP_201_CREATED)
+def choose_hospital(hosp: schemas.UserUpdate, hosp_id: int, current_user: int = Depends(oauth2.get_current_user), db: Session = Depends(get_db)):
     """POST request for a user to declare a hospital of their choice for placement."""
 
-    print("123")
+  
     # Query hosp database for the specified choice
-    choice = db.query(models.Hospital).filter(models.Hospital.id == hosp.hosp_id).first()
+    choice = db.query(models.Hospital).filter(models.Hospital.id == hosp_id)
 
-    if not choice:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"There is no hospital with id {hosp.hosp_id}")
-    print("tou")
+    if not choice.first():
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"There is no hospital with id {hosp_id}")
+
     # Get current active user
     user = db.query(models.Users).filter(models.Users.email == current_user.email)
     
     if not user.first():
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="You are not logged in.")
     
-    update_item = models.Users(**{"choice": hosp.hosp_id})
-    
-    user.update(update_item)
+    # Update the choice for current active user
+    user.update(hosp.dict(), synchronize_session=False)
 
+    # db.add(updated_user)
     db.commit()
 
-    return f"Your chose {choice}"
+    return f"You chose {choice.first().name}"
 
   
 @router.post("/", response_model=schemas.HospReturn, status_code=status.HTTP_201_CREATED)
