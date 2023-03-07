@@ -31,3 +31,4 @@ def user_login(user_credential: OAuth2PasswordRequestForm = Depends(), db: Sessi
     # Return success message
     print(user.name)
     return {"access_token": access_token, "token_type": "bearer"}
+
