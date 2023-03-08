@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Depends, HTTPException, status, APIRouter
 from ..db import engine, get_db
 from sqlalchemy.orm import Session
-from .. import models, schemas, utils, oauth2
+from .. import models, schemas, utils, oauth2, config
 # from ...Scripts import scripts
 
 
@@ -13,8 +13,14 @@ router = APIRouter(
 @router.get("/", response_model=list[schemas.UserReturn])
 def get_users( db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
     """
-    Get all the registered users.
+    Get all the registered users. 
+    Only admins can do this.
     """
+    
+    # Check if the current user is an admin. Currently taking admin as one whose reg_num matches the secret combination.
+    oauth2.verify_admin(current_user)
+
+    # Query database for all registered users
     users = db.query(models.Users).all()
 
     # print(current_user.email)
