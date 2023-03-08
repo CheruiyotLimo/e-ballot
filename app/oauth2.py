@@ -3,7 +3,7 @@ from fastapi.security import OAuth2PasswordBearer
 from .config import settings
 from datetime import datetime, timedelta
 from fastapi.encoders import jsonable_encoder
-from . import schemas, db, models
+from . import schemas, db, models,config
 from fastapi import Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
@@ -73,5 +73,12 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="You need to log in first")
     
     # Return the user
-    print(f"Current active user: {user.name}")
+    if user.reg_num == config.settings.admin_reg:
+        print(f"Current active user: {user.name} (Admin)")
+    else:
+        print(f"Current active user: {user.name}")
     return user
+
+def verify_admin(user):
+    if user.reg_num != config.settings.admin_reg:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not have the privileges to perform this action")
