@@ -21,7 +21,7 @@ def get_users( db: Session = Depends(get_db), current_user: int = Depends(oauth2
     oauth2.verify_admin(current_user)
 
     # Query database for all registered users
-    users = db.query(models.Users).all()
+    users = db.query(models.Users).filter(models.Users.role == None).all()
 
     # print(current_user.email)
     if not users:
@@ -39,12 +39,17 @@ def register_user(data: schemas.UserCreate, db: Session = Depends(get_db)):
 
     # Check if provided email and/or registration number exists in database
     user_email = db.query(models.Users).filter(models.Users.email == data.email)
-    user_reg_no = db.query(models.Users).filter(models.Users.reg_num == data.reg_num)
 
     # Raise HTTP error if any exists.
-    if user_email.first() or user_reg_no.first():
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="A user already exists with similar email or registration number!!")
+    if user_email.first():
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="A user already exists with similar email!!")
     
+    # If an admin, hash the reg_num to abstract the admin secret in the database.
+    if data.reg_num == config.settings.admin_reg:
+        new_reg = utils.hash(data.reg_num)
+        data.reg_num = new_reg
+        data.role= "admin"
+
     # Hash password before storing in the database.
     new_password = utils.hash(data.password)
     data.password = new_password
