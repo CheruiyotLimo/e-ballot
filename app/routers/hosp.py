@@ -25,7 +25,7 @@ def get_all_hospitals(current_user: int = Depends(oauth2.get_current_user), db: 
 
     return hosps
 
-@router.put("/choice/{hosp_id}", status_code=status.HTTP_201_CREATED)
+@router.patch("/choice/{hosp_id}", status_code=status.HTTP_201_CREATED)
 def choose_hospital(hosp: schemas.UserUpdate, hosp_id: int, current_user: int = Depends(oauth2.get_current_user), db: Session = Depends(get_db)):
     """POST request for a user to declare a hospital of their choice for placement."""
 
@@ -47,6 +47,7 @@ def choose_hospital(hosp: schemas.UserUpdate, hosp_id: int, current_user: int = 
 
     # db.add(updated_user)
     db.commit()
+    # db.refresh(user)
 
     return f"You chose {choice.first().name}"
 
@@ -56,9 +57,11 @@ def add_hospital(hosp: schemas.HospCreate, db: Session = Depends(get_db), curren
     """ POST request for updating the hospital database"""
 
     # Check if user is authorized ## Will come to add admin requirement later
-    user = db.query(models.Users).filter(models.Users.email == current_user.email).first()
+    oauth2.verify_admin(current_user)
 
-    if not user:
+    # user = db.query(models.Users).filter(models.Users.email == current_user.email).first()
+
+    if not current_user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="You are not authorized to make this change.")
     
     # Check if the hospital exists
