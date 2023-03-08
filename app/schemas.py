@@ -10,6 +10,7 @@ class UserCreate(BaseModel):
     email: EmailStr
     password: str
     choice: Optional[int] = None
+    role: Optional[str] = None
 
 class UserReturn(BaseModel):
     id: str
