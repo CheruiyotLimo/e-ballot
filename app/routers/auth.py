@@ -13,7 +13,7 @@ router = APIRouter(
 @router.post("/", status_code=status.HTTP_200_OK)
 def user_login(user_credential: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     
-    # Query for user with sspecified email
+    # Query for user with specified email
     user = db.query(models.Users).filter(models.Users.email==user_credential.username).first()
 
     # Raise exception if user is not found
