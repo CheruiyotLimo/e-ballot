@@ -13,7 +13,7 @@ class UserCreate(BaseModel):
     role: Optional[str] = None
 
 class UserReturn(BaseModel):
-    id: str
+    # id: str
     reg_num: str
     email: str
 
