@@ -1,7 +1,13 @@
-
+import re
 
 
 def email_verifier(email: str):
     """ Ascertain that the email is a verified school email address. """
 
-    return email[-21:] == "@students.uonbi.ac.ke"
+    pattern = r'@students\.uonbi\.ac\.ke$'
+    
+    if re.search(pattern, email):
+        return True
+    
+
+
