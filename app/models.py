@@ -23,3 +23,10 @@ class Hospital(Base):
     county_name = Column(String, nullable=False)
     county_num = Column(Integer, nullable=False)
     slots = Column(Integer, nullable=False)
+
+class AssignedHosp(Base):
+    __tablename__="hospassign"
+
+    id = Column(Integer, nullable=False, primary_key=True)
+    name = Column(String, nullable=False)
+    hosp_name = Column(String, nullable=False)
