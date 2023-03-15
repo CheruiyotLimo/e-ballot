@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from .. import models, schemas, utils, oauth2
 from fastapi.security import OAuth2PasswordRequestForm
 import requests
-import Scripts
+from Scripts import randomizer
 
 router = APIRouter(
     prefix="/admin",
@@ -32,22 +32,34 @@ def first_round(db: Session = Depends(get_db), current_user: int = Depends(oauth
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"The user with id {id} doesn,t exist")
 
     # Access user ids from randomizer scripts
-    for id in Scripts.randomizer.randomizer():
+    for id in randomizer.randomizer():
         user = db.query(models.Users).filter(models.Users.id == id)
 
+        print(id)
+        if not user.first():
+            continue
         # Check the user's first choice
         user_choice = user.first().choice
-
+        print(user_choice)
         # Query the hospital db for the hospital
-        hosp = db.query(models.Hospital).filter(models.Users.id == user_choice)
+        hosp = db.query(models.Hospital).filter(models.Hospital.id == user_choice)
         if hosp.first().slots >= 1:
             # Update hospital slots
+            hosp.update({"slots": (hosp.first().slots-1)}, synchronize_session=False)
+            db.commit()
             
-            print("Successfully assigned hospital.")
+            #Update the new assigned hospital db
+            print(f"Assigned {user.first().name} to {hosp.first().name}")
         else:
-            # Remove hosp from db if slots
             print("Hospital is out of slots.")
-            del_hosp = db.query(models.Hospital).filter(models.Users.id == user_choice).first()
+            del_hosp = db.query(models.Hospital).filter(models.Users.id == user_choice)
             del_hosp.delete(synchronize_session=False)
+        
+        
+        # user.delete(synchronize_session=False)
+        # else:
+        #     # Remove hosp from db if slots
+
+            
 
     return users
