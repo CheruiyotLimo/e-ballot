@@ -49,11 +49,17 @@ def first_round(db: Session = Depends(get_db), current_user: int = Depends(oauth
             db.commit()
             
             #Update the new assigned hospital db
+            # new_user = {"name": user.first().name, "hosp_name": hosp.first().name}
+            # new_user_data = models.AssignedHosp(**new_user.dict())
+            # db.add(new_user_data)
+            # db.commit()
+            # db.refresh(new_user_data)
+
             print(f"Assigned {user.first().name} to {hosp.first().name}")
         else:
             print("Hospital is out of slots.")
-            del_hosp = db.query(models.Hospital).filter(models.Users.id == user_choice)
-            del_hosp.delete(synchronize_session=False)
+            # del_hosp = db.query(models.Hospital).filter(models.Users.id == user_choice)
+            # del_hosp.delete(synchronize_session=False)
         
         
         # user.delete(synchronize_session=False)
