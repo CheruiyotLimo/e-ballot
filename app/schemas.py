@@ -41,3 +41,7 @@ class HospReturn(BaseModel):
 
 class UserUpdate(BaseModel):
     choice: int
+
+class HospAssign(BaseModel):
+    name: str
+    hosp_name: str
