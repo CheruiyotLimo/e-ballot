@@ -3,12 +3,15 @@ import random
 
 def randomizer():
     checked = set()
-    user_list = 10
+    user_list = 20
+    rand_list = []
 
-    while len(checked) < user_list:
-        rand = random.randint(1, user_list)
+    while len(rand_list) < 3:
+        rand = random.randint(21, 23)
         if rand in checked:
             continue
         else:
             checked.add(rand)
-            yield rand
+            rand_list.append(rand)
+
+    return rand_list
