@@ -16,7 +16,7 @@ router = APIRouter(
 )
 
 
-@router.get("/")
+@router.get("/", status_code=status.HTTP_201_CREATED)
 def first_round(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
     """Get request to execute first part of balloting. Get all the users, randomize their selection and assign them the centers."""
 
