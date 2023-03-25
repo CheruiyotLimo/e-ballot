@@ -15,3 +15,5 @@ def randomizer():
             rand_list.append(rand)
 
     return rand_list
+
+print(randomizer())
