@@ -45,3 +45,6 @@ class UserUpdate(BaseModel):
 class HospAssign(BaseModel):
     name: str
     hosp_name: str
+
+class HospUpdate(BaseModel):
+    slots: int
