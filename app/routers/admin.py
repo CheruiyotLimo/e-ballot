@@ -43,14 +43,15 @@ def first_round(db: Session = Depends(get_db), current_user: int = Depends(oauth
         print(user_choice)
 
         # Query the hospital db for the hospital
-        hosp = db.query(models.Hospital).filter(models.Hospital.id == user_choice)
+        hospital = hosp.get_one_hospital(id=user_choice, current_user=current_user, db=db)
 
-        if hosp.first().slots >= 1:
+        if hospital.first().slots >= 1:
 
             # Update hospital slots
-            hosp.update({"slots": (hosp.first().slots-1)}, synchronize_session=False)
-            db.commit()
-            
+            new_slots = {"slots": hospital.first().slots-1}
+            # hospital.update({"slots": (hosp.first().slots-1)}, synchronize_session=False)
+            # db.commit()
+            hosp.patch_hospital_slots(hosp=new_slots, hosp_id=user_choice, current_user=current_user, db=db)
             #Update the new assigned hospital db
             
             # new_user = {"name": user.first().name, "hosp_name": hosp.first().name}
