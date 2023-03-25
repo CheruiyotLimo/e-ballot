@@ -11,7 +11,7 @@ router = APIRouter(
 )
 
 @router.get("/", response_model=list[schemas.UserReturn])
-def get_users( db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
+def get_users(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
     """
     Get all the registered users. 
     Only admins can do this.
