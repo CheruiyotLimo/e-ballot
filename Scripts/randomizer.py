@@ -6,8 +6,8 @@ def randomizer():
     user_list = 20
     rand_list = []
 
-    while len(rand_list) < 3:
-        rand = random.randint(21, 23)
+    while len(rand_list) < 4:
+        rand = random.randint(21, 24)
         if rand in checked:
             continue
         else:
