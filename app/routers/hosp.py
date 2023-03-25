@@ -25,6 +25,19 @@ def get_all_hospitals(current_user: int = Depends(oauth2.get_current_user), db: 
 
     return hosps
 
+@router.get("/{id}", status_code=status.HTTP_200_OK)
+def get_one_hospital(id: int, current_user: int = Depends(oauth2.get_current_user), db: Session = (Depends(get_db))):
+    """Get a single hospital by id."""
+    
+    #Verify current user
+    if not current_user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="You need to log in.")
+
+    # Query db for hospital
+    hosp = db.query(models.Hospital).filter(models.Hospital.id == id)
+    print(hosp.first())
+    return hosp
+
 @router.patch("/choice/{hosp_id}", status_code=status.HTTP_201_CREATED)
 def choose_hospital(hosp: schemas.UserUpdate, hosp_id: int, current_user: int = Depends(oauth2.get_current_user), db: Session = Depends(get_db)):
     """POST request for a user to declare a hospital of their choice for placement."""
@@ -78,3 +91,22 @@ def add_hospital(hosp_data: schemas.HospCreate, db: Session = Depends(get_db), c
     db.refresh(new_hosp)
 
     return hosp_data
+
+@router.put("/{hosp_id}", status_code=status.HTTP_201_CREATED)
+def patch_hospital_slots(hosp: schemas.HospUpdate, hosp_id: int, current_user: int = Depends(oauth2.get_current_user), db: Session = Depends(get_db)):
+    """Patch request to update the number of slots available in a hospital"""
+
+    # Verify user is an admin
+    oauth2.verify_admin(current_user)
+
+    # Query db for hospital
+    hospital = db.query(models.Hospital).filter(models.Hospital.id == hosp_id)
+    
+    if not hospital.first():
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Hospital with id: {hosp_id} doesnt exist")
+    
+    # Update the hospital slots
+    hospital.update(hosp.dict(), synchronize_session=False)
+    db.commit()
+
+    return hospital.first()
