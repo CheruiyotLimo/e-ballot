@@ -48,3 +48,7 @@ class HospAssign(BaseModel):
 
 class HospUpdate(BaseModel):
     slots: int
+
+class FinalCreate(BaseModel):
+    name: str
+    hosp_name: str
