@@ -9,7 +9,8 @@ from .. import models, schemas, utils, oauth2
 from fastapi.security import OAuth2PasswordRequestForm
 import requests
 from Scripts import randomizer
-from . import hosp, users, auth
+from . import hosp, users, auth, final
+import json
 
 router = APIRouter(
     prefix="/admin",
@@ -45,26 +46,24 @@ def first_round(db: Session = Depends(get_db), current_user: int = Depends(oauth
         # Query the hospital db for the hospital
         hospital = hosp.get_one_hospital(id=user_choice, current_user=current_user, db=db)
 
-        if hospital.first().slots >= 1:
+        if hospital.slots >= 1:
 
             # Update hospital slots
-            new_slots = {"slots": hospital.first().slots-1}
-            # hospital.update({"slots": (hosp.first().slots-1)}, synchronize_session=False)
-            # db.commit()
+            new_slots = {"slots": hospital.slots-1}
+            json_obj = json.dumps(new_slots)
+            new_slots = json.loads(json_obj)
             hosp.patch_hospital_slots(hosp=new_slots, hosp_id=user_choice, current_user=current_user, db=db)
-            #Update the new assigned hospital db
             
-            # new_user = {"name": user.first().name, "hosp_name": hosp.first().name}
-            # new_user_data = models.AssignedHosp(**new_user.dict())
-            # db.add(new_user_data)
-            # db.commit()
-            # db.refresh(new_user_data)
+            # Update the new assigned hospital db
+            allocated_user = {"name": user.first().name, "hosp_name": hospital.name}
+            final.add_to_final_list(entry=allocated_user, current_user=current_user, db=db)
 
-            print(f"Assigned {user.first().name} to {hosp.first().name}")
+            print(f"Allocated {allocated_user['name']} to {allocated_user['hosp_name']}")
         else:
             print("Hospital is out of slots.")
-            # del_hosp = db.query(models.Hospital).filter(models.Users.id == user_choice)
-            # del_hosp.delete(synchronize_session=False)
+            # Remove hosp from the db
+            # hosp.delete_hospital(hosp_id=user_choice, current_user=current_user, db=db)
+           
         
         
         # user.delete(synchronize_session=False)
