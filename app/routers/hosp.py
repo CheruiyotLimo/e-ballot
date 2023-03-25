@@ -53,7 +53,7 @@ def choose_hospital(hosp: schemas.UserUpdate, hosp_id: int, current_user: int = 
 
   
 @router.post("/", response_model=schemas.HospReturn, status_code=status.HTTP_201_CREATED)
-def add_hospital(hosp: schemas.HospCreate, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
+def add_hospital(hosp_data: schemas.HospCreate, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
     """ POST request for updating the hospital database"""
 
     # Check if user is authorized ## Will come to add admin requirement later
@@ -65,16 +65,16 @@ def add_hospital(hosp: schemas.HospCreate, db: Session = Depends(get_db), curren
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="You are not authorized to make this change.")
     
     # Check if the hospital exists
-    hosp = db.query(models.Hospital).filter(models.Hospital.name == hosp.name).first()
+    hosp = db.query(models.Hospital).filter(models.Hospital.name == hosp_data.name).first()
     if hosp:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Hospital already exists.")
     
     # Convert the dictionary to a model dictionary
-    new_hosp = models.Hospital(**hosp.dict())
+    new_hosp = models.Hospital(**hosp_data.dict())
 
     # Add new hospital to the database
     db.add(new_hosp)
     db.commit()
     db.refresh(new_hosp)
 
-    return hosp
+    return hosp_data
