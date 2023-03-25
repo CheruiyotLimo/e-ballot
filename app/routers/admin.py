@@ -9,6 +9,7 @@ from .. import models, schemas, utils, oauth2
 from fastapi.security import OAuth2PasswordRequestForm
 import requests
 from Scripts import randomizer
+from . import hosp, users, auth
 
 router = APIRouter(
     prefix="/admin",
@@ -24,12 +25,10 @@ def first_round(db: Session = Depends(get_db), current_user: int = Depends(oauth
     oauth2.verify_admin(current_user)
 
     # Get all registered users in a list
-
-    # user_list = requests.get("http://127.0.0.1:8000/users/")
-    users = db.query(models.Users).filter(models.Users.role == None).all()
+    user_list = users.get_users(db=db, current_user=current_user)
 
     # print(current_user.email)
-    if not users:
+    if not user_list:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"No registered users exist")
 
     # Access user ids from randomizer scripts
@@ -42,14 +41,18 @@ def first_round(db: Session = Depends(get_db), current_user: int = Depends(oauth
         # Check the user's first choice
         user_choice = user.first().choice
         print(user_choice)
+
         # Query the hospital db for the hospital
         hosp = db.query(models.Hospital).filter(models.Hospital.id == user_choice)
+
         if hosp.first().slots >= 1:
+
             # Update hospital slots
             hosp.update({"slots": (hosp.first().slots-1)}, synchronize_session=False)
             db.commit()
             
             #Update the new assigned hospital db
+            
             # new_user = {"name": user.first().name, "hosp_name": hosp.first().name}
             # new_user_data = models.AssignedHosp(**new_user.dict())
             # db.add(new_user_data)
@@ -69,4 +72,4 @@ def first_round(db: Session = Depends(get_db), current_user: int = Depends(oauth
 
             
 
-    return users
+    return user_list
