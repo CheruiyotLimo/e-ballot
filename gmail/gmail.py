@@ -6,7 +6,7 @@ from email.message import EmailMessage
 import google.auth
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
-
+from google.oauth2.service_account import Credentials
 
 def gmail_create_draft():
     """Create and insert a draft email.
@@ -18,6 +18,7 @@ def gmail_create_draft():
       for guides on implementing OAuth2 for the application.
     """
     creds, _ = google.auth.default()
+   
 
     try:
         # create gmail api client
