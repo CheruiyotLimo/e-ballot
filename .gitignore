@@ -3,3 +3,4 @@ __pycache__
 .env
 credentials
 credentials.json
+gmail/token.json
