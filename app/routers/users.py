@@ -63,3 +63,24 @@ def register_user(data: schemas.UserCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(data)
     return data
+
+@router.patch("/{user_id}", status_code=status.HTTP_201_CREATED, response_model=schemas.UserReturn)
+def patch_user(user_data: schemas.UserUpdate, user_id: int, current_user: int = Depends(oauth2.get_current_user), db: Session = Depends(get_db)):
+    """PATCH request to update user choice column"""
+
+    # verify the user is an admin
+    oauth2.verify_admin(current_user)
+
+    # Query db for th current user
+    user = db.query(models.Users).filter(models.Users.id == user_id)
+
+    if not user.first():
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No such user exists")
+    
+    # Update the new choice column
+    user.update(user_data, synchronize_session=False)
+
+    # Commit changes
+    db.commit()
+
+    return user.first()
