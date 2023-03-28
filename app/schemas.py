@@ -40,7 +40,7 @@ class HospReturn(BaseModel):
     slots: int
 
 class UserUpdate(BaseModel):
-    choice: int
+    choice: int | str
 
 class HospAssign(BaseModel):
     name: str
@@ -52,3 +52,6 @@ class HospUpdate(BaseModel):
 class FinalCreate(BaseModel):
     name: str
     hosp_name: str
+
+# class UserUpdateTwo(BaseModel):
+#     choice:
