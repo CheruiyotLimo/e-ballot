@@ -11,15 +11,18 @@ import requests
 from Scripts import randomizer
 from . import hosp, users, auth, final
 import json
+from typing import Literal
+from sqlalchemy.sql.expression import func
 
 router = APIRouter(
     prefix="/admin",
     tags=["Admin"]
 )
 
+Rounds = Literal[1, 2]
 
 @router.get("/", status_code=status.HTTP_201_CREATED)
-def first_round(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
+def first_round(select_round: Rounds, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
     """Get request to execute first part of balloting. Get all the users, randomize their selection and assign them the centers."""
 
     # Ensure the user is an admin
@@ -39,15 +42,25 @@ def first_round(db: Session = Depends(get_db), current_user: int = Depends(oauth
         print(id)
         if not user.first():
             continue
-        # Check the user's first choice
-        user_choice = user.first().choice
+
+
+        # Check user choice based on round of selection
+        if select_round == 1:
+            user_choice = user.first().choice
+        elif select_round == 2:
+            user_choice = user.first().second_choice
         print(user_choice)
 
         # Query the hospital db for the hospital
         hospital = hosp.get_one_hospital(id=user_choice, current_user=current_user, db=db)
         
+        # If hospital has no slots, nullify user's choice
         if not hospital:
-            deprecated_choice = {"choice": None}
+            if select_round == 1:
+                deprecated_choice = {"first_choice": None}
+            elif select_round == 2:
+                deprecated_choice = {"second_choice": None}
+        
             users.patch_user(user_data=deprecated_choice, user_id=user.first().id, current_user=current_user, db=db)
         
         else:
@@ -74,7 +87,38 @@ def first_round(db: Session = Depends(get_db), current_user: int = Depends(oauth
         # user.delete(synchronize_session=False)
         # else:
         #     # Remove hosp from db if slots
-
-            
+    
 
     return user_list
+
+
+@router.get("/", status_code=status.HTTP_201_CREATED)
+def final_pass(current_user: int = Depends(oauth2.get_current_user), db: Session = Depends(get_db)):
+    """GET request to execute final pass which will match random users to a random hospital"""
+
+    # verify admin
+    oauth2.verify_admin(current_user)
+
+    # Needs a loop to account for all unselected applicants
+    # all_users = db.query(models.Users).all()
+    # while all_users:
+
+    # select a random user
+    user = db.query(models.Users).order_by(func.random())
+
+    # select a random hospital
+    hospital = db.query(models.Hospital).order_by(func.random())
+
+    if hospital.first().slots >= 1:
+        # Update hospital slots
+        new_slots = {"slots": hospital.slots-1}
+        json_obj = json.dumps(new_slots)
+        new_slots = json.loads(json_obj)
+        hosp.patch_hospital_slots(hosp=new_slots, hosp_id=hospital.first().id, current_user=current_user, db=db)
+        
+    # Update the new assigned hospital db
+        allocated_user = {"name": user.first().name, "hosp_name": hospital.first().name}
+        final.add_to_final_list(entry=allocated_user, current_user=current_user, db=db)
+    
+    else:
+        print(f"{hospital.first().name} is out of slots.")
