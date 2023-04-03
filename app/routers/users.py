@@ -2,7 +2,7 @@ from fastapi import FastAPI, Depends, HTTPException, status, APIRouter
 from ..db import engine, get_db
 from sqlalchemy.orm import Session
 from .. import models, schemas, utils, oauth2, config
-from Scripts import scripts
+from Scripts import scripts, county_validator
 from typing import Literal
 
 router = APIRouter(
@@ -87,7 +87,7 @@ def patch_user(user_data: schemas.UserUpdate, user_id: int, current_user: int = 
 
 CHOICE = Literal["1", "2"]
 
-@router.patch("/{choice}/", status_code=status.HTTP_201_CREATED)
+@router.patch("/choice/{choice}/", status_code=status.HTTP_201_CREATED)
 def choose_hospital(user_data: schemas.UserUpdate, choice: CHOICE, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
     """PATCH request to update each user's choice.
        To be utilized by the client.
@@ -102,10 +102,16 @@ def choose_hospital(user_data: schemas.UserUpdate, choice: CHOICE, db: Session =
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid action for type of user.")
     
     # Check for indicated user choice
-    if choice == 1:
+    if choice == "1":
         user.update(user_data.dict(), synchronize_session=False)
     else:
-        # will implement a check
+        # Check first choice has been made
+        if not user.first().first_choice:
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Can't make second choice before first. Please make first choice.")
+        # Check second choice is a valid
+        if not county_validator.county_validator(user.first().first_choice, user_data.first_choice, current_user, db):
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="You cannot select two hospitals in the same county. Please choose another.")
+        
         updated_data = {"second_choice": user_data.first_choice}
         # update the db
         user.update(updated_data, synchronize_session=False)
