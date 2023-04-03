@@ -118,4 +118,4 @@ def choose_hospital(user_data: schemas.UserUpdate, choice: CHOICE, db: Session =
 
     db.commit()
     
-    return "success"
+    return "Successfully made your choice."
