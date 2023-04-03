@@ -3,7 +3,7 @@ from ..db import engine, get_db
 from sqlalchemy.orm import Session
 from .. import models, schemas, utils, oauth2, config
 from Scripts import scripts
-
+from typing import Literal
 
 router = APIRouter(
     prefix="/users",
@@ -84,3 +84,32 @@ def patch_user(user_data: schemas.UserUpdate, user_id: int, current_user: int = 
     db.commit()
 
     return user.first()
+
+CHOICE = Literal["1", "2"]
+
+@router.patch("/{choice}/", status_code=status.HTTP_201_CREATED)
+def choose_hospital(user_data: schemas.UserUpdate, choice: CHOICE, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
+    """PATCH request to update each user's choice.
+       To be utilized by the client.
+    """
+    # QUery the db for the user
+    user = db.query(models.Users).filter(models.Users.id == current_user.id)
+
+    if not user.first():
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="You need to log in to perform this action")
+    
+    if user.first().role == "admin":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid action for type of user.")
+    
+    # Check for indicated user choice
+    if choice == 1:
+        user.update(user_data.dict(), synchronize_session=False)
+    else:
+        # will implement a check
+        updated_data = {"second_choice": user_data.first_choice}
+        # update the db
+        user.update(updated_data, synchronize_session=False)
+
+    db.commit()
+    
+    return "success"
