@@ -46,7 +46,7 @@ def first_round(select_round: Rounds, db: Session = Depends(get_db), current_use
 
         # Check user choice based on round of selection
         if select_round == 1:
-            user_choice = user.first().choice
+            user_choice = user.first().first_choice
         elif select_round == 2:
             user_choice = user.first().second_choice
         print(user_choice)
