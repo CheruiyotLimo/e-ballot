@@ -25,13 +25,13 @@ def gmail_send_message():
     try:
         service = build('gmail', 'v1', credentials=creds)
         message = EmailMessage()
-
+        print(1)
         message.set_content('This is automated draft mail')
 
         message['To'] = 'limzyon@gmail.com'
         message['From'] = 'limzyon@gmail.com'
         message['Subject'] = 'Automated draft'
-
+        print(message)
         # encoded message
         encoded_message = base64.urlsafe_b64encode(message.as_bytes()) \
             .decode()
@@ -40,8 +40,8 @@ def gmail_send_message():
             'raw': encoded_message
         }
         # pylint: disable=E1101
-        send_message = (service.users().messages().send
-                        (userId="me", body=create_message).execute())
+        print(3)
+        send_message = (service.users().messages().send(userId="me", body=create_message).execute())
         print(F'Message Id: {send_message["id"]}')
     except HttpError as error:
         print(F'An error occurred: {error}')
