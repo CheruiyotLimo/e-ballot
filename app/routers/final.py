@@ -27,3 +27,4 @@ def add_to_final_list(entry: schemas.FinalCreate, current_user: int = Depends(oa
     db.commit()
     db.refresh(new_entry)
     return new_entry
+
