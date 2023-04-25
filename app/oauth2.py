@@ -6,7 +6,7 @@ from fastapi.encoders import jsonable_encoder
 from . import schemas, db, models, config, utils
 from fastapi import Depends, HTTPException, status
 from sqlalchemy.orm import Session
-
+# from app.routers import hosp
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
@@ -66,7 +66,7 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     # Verify the token
     token_data = verify_access_token(token, cred_exception)
 
-    #Query the db for the user
+    # Query the db for the user
     user = db.query(models.Users).filter(models.Users.id == token_data.id).first()
 
     if not user:
