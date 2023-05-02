@@ -14,7 +14,7 @@ class UserCreate(BaseModel):
     role: Optional[str] = None
 
 class UserReturn(BaseModel):
-    # id: str
+    id: str
     reg_num: str
     email: str
 
@@ -24,6 +24,10 @@ class UserReturn(BaseModel):
 class UserLogin(BaseModel):
     username: str
     password: str
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
 
 class TokenData(BaseModel):
     id: Optional[str] = None
