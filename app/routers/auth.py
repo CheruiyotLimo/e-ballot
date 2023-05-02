@@ -10,7 +10,7 @@ router = APIRouter(
     tags=["Authentication"]
 )
 
-@router.post("/", status_code=status.HTTP_200_OK)
+@router.post("/", status_code=status.HTTP_200_OK, response_model=schemas.Token)
 def user_login(user_credential: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     
     # Query for user with specified email
@@ -31,4 +31,5 @@ def user_login(user_credential: OAuth2PasswordRequestForm = Depends(), db: Sessi
     # Return success message
     print(user.name)
     return {"access_token": access_token, "token_type": "bearer"}
+    # return access_token
 
