@@ -22,7 +22,7 @@ def user_login(user_credential: OAuth2PasswordRequestForm = Depends(), db: Sessi
     
     # Verify the specified password to be correct
     if not utils.verify_password(user_credential.password, user.password):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Wrong password")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Wrong password")
     
     # To implement: generation of a new token.
     access_token = oauth2.create_access_token({"user_id": user.id, "reg_num": user.reg_num})
