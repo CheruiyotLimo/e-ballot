@@ -20,12 +20,18 @@ def test_root(client):
     print(res.json())
     assert res.status_code == 200
 
-def test_register_user(client):
-    res = client.post("/users/", json={"reg_num": "H31/200/1298", "name": "Fraser", "email": "q123@students.uonbi.ac.ke", "password": "password12"})
+@pytest.mark.parametrize('reg_num, name, email, password', [
+    ("H31/200/1298", "Fraser", "q123@students.uonbi.ac.ke", "password12"),
+    (settings.admin_reg, "Mimo", "mims@students.uonbi.ac.ke", "56789"),
+    ("H31/2098/1203", "Don", "don@students.uonbi.ac.ke", "donno")
+])
+def test_register_user(client, reg_num, name, email, password):
+    res = client.post("/users/", json={"reg_num": reg_num, "name": name, "email": email, "password": password})
     print(res.json())
     test_user = schemas.UserReturn(**res.json())
     
-    assert test_user.email == "q123@students.uonbi.ac.ke"
+    # assert test_user.role == role
+    assert test_user.email == email
     assert res.status_code == 201
 
 def test_user_login(client, test_user):
@@ -37,3 +43,21 @@ def test_user_login(client, test_user):
     assert login_res.token_type == 'bearer'
     assert res.status_code == 200
 
+
+@pytest.mark.parametrize("email, password, status_code", [
+    ('wrong@students.uonbi.ac.ke', '12345', 404),
+    ('fras@students.uonbi.ac.ke', 'wrong', 403),
+    ('fras@students.uonbi.ac.ke', None, 422),
+    (None, '12345', 422),
+])
+def test_incorrect_login(client, test_user, email, password, status_code):
+    res = client.post('/login/', data = {'username': email, 'password': password})
+
+    assert res.status_code == status_code
+
+
+def test_get_all_users(authorized_client_admin, test_user_admin):
+    res = authorized_client_admin.get("/users")
+    print(res.json())
+    assert res.status_code == 200
+    
