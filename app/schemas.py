@@ -17,7 +17,7 @@ class UserReturn(BaseModel):
     id: str
     reg_num: str
     email: str
-
+    
     class Config:
         orm_mode = True
     
