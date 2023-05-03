@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 from app.main import app
-from app import main, schemas
+from app import main, schemas, oauth2
 from app.config import settings
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -54,3 +54,43 @@ def test_user(client):
     new_user['password'] = user_data['password']
     assert res.status_code == 201
     return new_user
+
+@pytest.fixture
+def token(test_user):
+    token = oauth2.create_access_token(user_data={'user_id': test_user['id'], 'reg_num': test_user['reg_num']})
+    return token
+
+@pytest.fixture
+def test_user_admin(client):
+    user_data = {"reg_num": settings.admin_reg, "name": "Mimo", "email": 'mims@students.uonbi.ac.ke', 'password': '56789'}
+    res = client.post("/users/", json=user_data)
+    
+    new_user = res.json()
+    print(new_user)
+    new_user['password'] = user_data['password']
+    new_user['role'] = 'admin'
+    assert res.status_code == 201
+    return new_user
+
+@pytest.fixture
+def token_admin(test_user_admin):
+    token = oauth2.create_access_token(user_data={'user_id': test_user_admin['id'], 'reg_num': test_user_admin['reg_num']})
+    return token
+
+
+@pytest.fixture
+def authorized_client(token, client):
+    client.headers = {
+        **client.headers,
+        'Authorization': f'Bearer {token}'
+    }
+    return client
+
+@pytest.fixture
+def authorized_client_admin(token_admin, client):
+    client.headers = {
+        **client.headers,
+        'Authorization': f'Bearer {token_admin}'
+    }
+    return client
+
