@@ -23,7 +23,7 @@ def get_users(db: Session = Depends(get_db), current_user: int = Depends(oauth2.
     # Query database for all registered users
     users = db.query(models.Users).filter(models.Users.role == None).all()
 
-    # print(current_user.email)
+    # # print(current_user.email)
     if not users:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"The user with id {id} doesn,t exist")
     # print(users)
