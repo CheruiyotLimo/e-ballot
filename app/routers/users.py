@@ -96,10 +96,10 @@ def choose_hospital(user_data: schemas.UserUpdate, choice: CHOICE, db: Session =
     """
     # QUery the db for the user
     user = db.query(models.Users).filter(models.Users.id == current_user.id)
-
+ 
     if not user.first():
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="You need to log in to perform this action")
-    
+
     if user.first().role == "admin":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid action for type of user.")
     
@@ -109,8 +109,10 @@ def choose_hospital(user_data: schemas.UserUpdate, choice: CHOICE, db: Session =
     else:
         # Check first choice has been made
         if not user.first().first_choice:
+            print(2)
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Can't make second choice before first. Please make first choice.")
         # Check second choice is a valid
+        print(1)
         if not county_validator.county_validator(user.first().first_choice, user_data.first_choice, current_user, db):
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="You cannot select two hospitals in the same county. Please choose another.")
         
@@ -119,6 +121,10 @@ def choose_hospital(user_data: schemas.UserUpdate, choice: CHOICE, db: Session =
         user.update(updated_data, synchronize_session=False)
 
     db.commit()
-    
-    # return "Successfully made your choice."
-    return user
+
+    print("Successfully made your choice.")
+    print(user.first())
+    # return user
+    # Temp patch
+    print(type(user.first()))
+    return user.first()
