@@ -48,6 +48,9 @@ class UserUpdate(BaseModel):
     first_choice: Optional[int | str] = None
     second_choice: Optional[int | str] = None
 
+class UserChoice(UserUpdate):
+    name: str
+
 class HospAssign(BaseModel):
     name: str
     hosp_name: str
