@@ -4,16 +4,16 @@ from jose import jwt
 from app.config import settings
 import pytest
 
-@pytest.fixture()
-def test_user(client):
-    user_data = {"reg_num": "H31/2001/2015", "name": "Fraser", "email": 'fras@students.uonbi.ac.ke', 'password': '12345'}
-    res = client.post("/users/", json=user_data)
+# @pytest.fixture()
+# def test_user(client):
+#     user_data = {"reg_num": "H31/2001/2015", "name": "Fraser", "email": 'fras@students.uonbi.ac.ke', 'password': '12345'}
+#     res = client.post("/users/", json=user_data)
     
-    new_user = res.json()
-    print(new_user)
-    new_user['password'] = user_data['password']
-    assert res.status_code == 201
-    return new_user
+#     new_user = res.json()
+#     print(new_user)
+#     new_user['password'] = user_data['password']
+#     assert res.status_code == 201
+#     return new_user
 
 def test_root(client):
     res = client.get("/")
@@ -29,7 +29,7 @@ def test_register_user(client, reg_num, name, email, password):
     res = client.post("/users/", json={"reg_num": reg_num, "name": name, "email": email, "password": password})
     print(res.json())
     test_user = schemas.UserReturn(**res.json())
-    
+    print(res.json().get('first_choice'))
     # assert test_user.role == role
     assert test_user.email == email
     assert res.status_code == 201
@@ -52,12 +52,21 @@ def test_user_login(client, test_user):
 ])
 def test_incorrect_login(client, test_user, email, password, status_code):
     res = client.post('/login/', data = {'username': email, 'password': password})
-
     assert res.status_code == status_code
 
 
-def test_get_all_users(authorized_client_admin, test_user_admin):
+def test_get_all_users(authorized_client_admin, create_user_list):
     res = authorized_client_admin.get("/users")
     print(res.json())
     assert res.status_code == 200
-    
+
+# @pytest.mark.parametrize("choice, hosp_id, status_code", [
+#     (1, 2, 201),
+#     (2, 1, 409)
+# ])
+def test_patch_user(authorized_client, test_user, create_hospitals_list):
+    res = authorized_client.patch(f'/users/choice/1/', json={'first_choice': 1})
+    print(type(test_user))
+    print(type(res.json()))
+    print(res.json().get('first_choice'))
+    assert res.status_code == 201
