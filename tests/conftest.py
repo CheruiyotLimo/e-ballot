@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 from app.main import app
-from app import main, schemas, oauth2
+from app import main, schemas, oauth2, models
 from app.config import settings
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -62,6 +62,8 @@ def token(test_user):
 
 @pytest.fixture
 def test_user_admin(client):
+    """Creates a test user who has been designated an admin"""
+
     user_data = {"reg_num": settings.admin_reg, "name": "Mimo", "email": 'mims@students.uonbi.ac.ke', 'password': '56789'}
     res = client.post("/users/", json=user_data)
     
@@ -74,12 +76,15 @@ def test_user_admin(client):
 
 @pytest.fixture
 def token_admin(test_user_admin):
+    """ Generates a token using the the test user admin. """
+    
     token = oauth2.create_access_token(user_data={'user_id': test_user_admin['id'], 'reg_num': test_user_admin['reg_num']})
     return token
 
 
 @pytest.fixture
 def authorized_client(token, client):
+    """ Confirms the request headers to include a token and returns it for test user. """
     client.headers = {
         **client.headers,
         'Authorization': f'Bearer {token}'
@@ -88,9 +93,77 @@ def authorized_client(token, client):
 
 @pytest.fixture
 def authorized_client_admin(token_admin, client):
+    """ Confirms the request headers to include a token and returns it for test admin user. """
     client.headers = {
         **client.headers,
         'Authorization': f'Bearer {token_admin}'
     }
     return client
 
+@pytest.fixture
+def create_user_list(test_user_admin, session):
+    """ Utility function to populate our db with users"""
+    
+    users_list = [
+        {
+            'reg_num': 'H31/2700/2017',
+            'name': "Limo",
+            'email': 'limz@students.uonbi.ac.ke',
+            'password': '12345'
+        },
+        {
+            'reg_num': 'H31/2701/2017',
+            'name': "Cheruiyot",
+            'email': 'cher@students.uonbi.ac.ke',
+            'password': '12345'
+        },
+        {
+            'reg_num': 'H31/2702/2017',
+            'name': "Kibiwot",
+            'email': 'kibz@students.uonbi.ac.ke',
+            'password': '12345'
+        }
+    ]
+    
+    def create_user(user):
+        return models.Users(**user)
+    
+    post_map = list(map(create_user, users_list))
+
+    session.add_all(post_map)
+    session.commit()
+
+    posts = session.query(models.Users).all()
+    return posts
+        
+@pytest.fixture
+def create_hospitals_list(session):
+    hosp_list = [
+        {
+            'name': 'KNH',
+            'county_name': 'Nairobi',
+            'county_num': 47,
+            'slots': 1
+        },
+        {
+            'name': 'MTRH',
+            'county_name': 'Uasin Gishu',
+            'county_num': 27,
+            'slots': 1
+        },
+        {
+            'name': 'CGRH',
+            'county_name': 'Mombasa',
+            'county_num': 15,
+            'slots': 1
+        }
+    ]
+    def create_hosp(hosp):
+        return models.Hospital(**hosp)
+    
+    hosp_map = list(map(create_hosp, hosp_list))
+    session.add_all(hosp_map)
+    session.commit()
+
+    hosps = session.query(models.Hospital).all()
+    return hosps
