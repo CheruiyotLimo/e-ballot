@@ -67,6 +67,8 @@ def register_user(data: schemas.UserCreate, db: Session = Depends(get_db)):
 @router.patch("/{user_id}", status_code=status.HTTP_201_CREATED, response_model=schemas.UserReturn)
 def patch_user(user_data: schemas.UserUpdate, user_id: int, current_user: int = Depends(oauth2.get_current_user), db: Session = Depends(get_db)):
     """PATCH request to update user choice column"""
+    ### Possibly deprecated
+
 
     # verify the user is an admin
     oauth2.verify_admin(current_user)
@@ -118,4 +120,5 @@ def choose_hospital(user_data: schemas.UserUpdate, choice: CHOICE, db: Session =
 
     db.commit()
     
-    return "Successfully made your choice."
+    # return "Successfully made your choice."
+    return user
