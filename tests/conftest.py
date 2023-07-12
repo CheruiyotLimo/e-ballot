@@ -159,7 +159,13 @@ def create_hospitals_list(session):
             'county_name': 'Mombasa',
             'county_num': 15,
             'slots': 1
-        }
+        },
+        {
+            'name': 'Mbagathi',
+            'county_name': 'Nairobi',
+            'county_num': 47,
+            'slots': 1
+        },
     ]
     def create_hosp(hosp):
         return models.Hospital(**hosp)
@@ -171,13 +177,3 @@ def create_hospitals_list(session):
     hosps = session.query(models.Hospital).all()
     return hosps
 
-# @pytest.fixture()
-# def test_user_with_choice(client, create_hospitals_list):
-#     user_data = {"reg_num": "H31/2001/2015", "name": "Fraser", "email": 'frasha@students.uonbi.ac.ke', 'password': '12345', 'first_choice': 1}
-#     res = client.post("/users/", json=user_data)
-    
-#     new_user = res.json()
-#     print(new_user)
-#     new_user['password'] = user_data['password']
-#     assert res.status_code == 201
-#     return new_user
