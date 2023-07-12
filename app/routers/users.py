@@ -106,6 +106,7 @@ def choose_hospital(user_data: schemas.UserUpdate, choice: CHOICE, db: Session =
     # Check for indicated user choice
     if choice == "1":
         user.update(user_data.dict(), synchronize_session=False)
+        print("Successfully made your first choice.")
     else:
         # Check first choice has been made
         if not user.first().first_choice:
@@ -119,10 +120,11 @@ def choose_hospital(user_data: schemas.UserUpdate, choice: CHOICE, db: Session =
         updated_data = {"second_choice": user_data.first_choice}
         # update the db
         user.update(updated_data, synchronize_session=False)
+        print("Successfully made your second choice.")
 
     db.commit()
 
-    print("Successfully made your choice.")
+    
     print(user.first())
     # return user
     # Temp patch
