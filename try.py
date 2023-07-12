@@ -1,5 +1,3 @@
-st = " 5  5 7  8"
+st = [5, 5,6,6,2, 20]
 
-if st:
-    print(st)
-    print(len(st))
+print(st.index(20))
