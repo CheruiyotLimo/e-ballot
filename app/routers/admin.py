@@ -139,7 +139,11 @@ def final_pass(current_user: int = Depends(oauth2.get_current_user), db: Session
 @router.get("/", status_code=status.HTTP_201_CREATED)
 def magic_maker(current_user: int = Depends(oauth2.get_current_user), db: Session = Depends(get_db)):
     first_round(select_round=1, current_user=current_user, db=db)
+    print("Done with round 1.")
+    time.sleep(2)
     first_round(select_round=2, current_user=current_user, db=db)
+    print("Done with round 2.")
+    time.sleep(2)
     final_pass(current_user=current_user, db=db)
     return "Successfully allocated hospitals."
     
