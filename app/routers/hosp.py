@@ -35,13 +35,15 @@ def get_one_hospital(id: int, current_user: int = Depends(oauth2.get_current_use
 
     # Query db for hospital
     hosp = db.query(models.Hospital).filter(models.Hospital.id == id)
+    if not hosp.first():
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Hospital does not exist! Choose another")
     # print(hosp.first())
     return hosp.first()
 
 @router.patch("/choice/{hosp_id}", status_code=status.HTTP_201_CREATED)
 def choose_hospital(hosp: schemas.UserUpdate, hosp_id: int, current_user: int = Depends(oauth2.get_current_user), db: Session = Depends(get_db)):
     """POST request for a user to declare a hospital of their choice for placement."""
-
+    ## Appears to have been remodeled and moved
   
     # Query hosp database for the specified choice
     choice = db.query(models.Hospital).filter(models.Hospital.id == hosp_id)
@@ -71,8 +73,6 @@ def add_hospital(hosp_data: schemas.HospCreate, db: Session = Depends(get_db), c
 
     # Check if user is authorized ## Will come to add admin requirement later
     oauth2.verify_admin(current_user)
-
-    # user = db.query(models.Users).filter(models.Users.email == current_user.email).first()
 
     if not current_user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="You are not authorized to make this change.")
@@ -106,7 +106,7 @@ def patch_hospital_slots(hosp: schemas.HospUpdate, hosp_id: int, current_user: i
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Hospital with id: {hosp_id} doesnt exist")
     
     # Update the hospital slots
-    hospital.update(hosp, synchronize_session=False)
+    hospital.update(hosp.dict(), synchronize_session=False)  ## Interesting bug here. When I use hosp.dict(), it runs fine on Postman dn tests but fails on use from the admin magic_maker file and vice versa
     db.commit()
 
     return hospital.first()
