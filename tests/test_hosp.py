@@ -55,7 +55,13 @@ def test_admin_add_new_hosp(authorized_client_admin, test_user_admin, create_hos
     print(hos)
     print(res.json())
     assert res.status_code == 201
-    assert len(create_hospitals_list) == 4
+    
+    # So how we can solve this not registering this in the conftest is to query the db through another endpoint call then we can verify it exists
+    new_res = authorized_client_admin.get(f'/hosps/5')
+    
+    new_hosp = schemas.HospReturn(**new_res.json())
+    print(new_hosp)
+    assert hos.name == new_hosp.name
 
 
 def test_admin_new_hosp_exists(authorized_client_admin, test_user_admin, create_hospitals_list):
@@ -87,7 +93,7 @@ def test_unauthorized_user_add_new_hosp(authorized_client, test_user, create_hos
     # print(hos)
     print(res.json())
     assert res.status_code == 403
-    assert len(create_hospitals_list) == 4
+
 
 def test_admin_patch_hosp_slots(authorized_client_admin, test_user_admin, create_hospitals_list):
     """ Test admins can update a hospital's slot number. """
@@ -108,10 +114,11 @@ def test_admin_patch_hosp_doesnt_exist(authorized_client_admin, test_user_admin,
 
 def test_admin_delete_hosp(authorized_client_admin, test_user_admin, create_hospitals_list):
     """ Tests admins delete hospital from db. """
-## Delete not reflectng on the created hosp list
 
     res = authorized_client_admin.delete(f'/hosps/2')
-    print(res)
+
     assert res.status_code == 204
-    print(create_hospitals_list)
-    # assert len(create_hospitals_list) == 3
+
+    # Making a call to the db to get all hospitals and check their length is decreased by one.
+    new_res = authorized_client_admin.get(f'/hosps')
+    assert len(new_res.json()) == len(create_hospitals_list)-1
