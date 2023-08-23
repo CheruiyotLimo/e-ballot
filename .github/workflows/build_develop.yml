@@ -17,5 +17,5 @@ jobs:
           - name: Tests with pytest
             run: |
                 pip install pytest
-                export PYTHONPATH="${PYTHONPATH}:/Users/limzy/OneDrive/Desktop/Projects/ballot
+                export PYTHONPATH="${PYTHONPATH}:/Users/limzy/OneDrive/Desktop/Projects/ballot"
                 pytest
