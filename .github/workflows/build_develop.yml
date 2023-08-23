@@ -4,7 +4,13 @@ jobs:
     job1:
         runs-on: ubuntu-latest
         steps:
-         - name: git pull repo
-           uses: actions/checkout@v2
-         - name: say hi to Limo
-           run: echo "hello limo"
+          - name: git pull repo
+            uses: actions/checkout@v2
+          - name: Install Python
+            uses: actions/setup-python@v2
+            with:
+                python-version: "3.9"
+          - name: Upgrade pip
+            run: python -m pip install --upgrade pip
+          - name: Install all dependencies
+            run: pip install -r requirements.txt
