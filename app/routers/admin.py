@@ -27,7 +27,7 @@ Rounds = Literal[1, 2]
 
 
 def first_round(select_round: Rounds, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
-    """Get request to execute first part of balloting. Get all the users, randomize their selection and assign them the centers."""
+    """Get request to execute first phase of balloting. Get all the users, randomize their selection and assign them the centers."""
 
     # Ensure the user is an admin
     oauth2.verify_admin(current_user)
@@ -43,7 +43,7 @@ def first_round(select_round: Rounds, db: Session = Depends(get_db), current_use
     # Need a statement to loop through the options.
     
     # while user_list:
-    for id in randomizer.new_rand(user_list):  # Bug is in this randomizing logic
+    for id in randomizer.new_rand(user_list):
 
         user = db.query(models.Users).filter(models.Users.id == id)
 
@@ -138,12 +138,18 @@ def final_pass(current_user: int = Depends(oauth2.get_current_user), db: Session
 
 @router.get("/", status_code=status.HTTP_201_CREATED)
 def magic_maker(current_user: int = Depends(oauth2.get_current_user), db: Session = Depends(get_db)):
+    
+    # First phase
     first_round(select_round=1, current_user=current_user, db=db)
     print("Done with round 1.")
     time.sleep(2)
+
+    # Second phase
     first_round(select_round=2, current_user=current_user, db=db)
     print("Done with round 2.")
     time.sleep(2)
+
+    # Final phase
     final_pass(current_user=current_user, db=db)
     return "Successfully allocated hospitals."
     
