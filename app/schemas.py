@@ -1,6 +1,6 @@
 from pydantic import BaseModel, EmailStr
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Union
 
 
 
@@ -45,8 +45,8 @@ class HospReturn(BaseModel):
     slots: int
 
 class UserUpdate(BaseModel):
-    first_choice: Optional[int | str] = None
-    second_choice: Optional[int | str] = None
+    first_choice: Optional[Union[int, str]] = None
+    second_choice: Optional[Union[int, str]] = None
 
 class UserChoice(UserUpdate):
     name: str
