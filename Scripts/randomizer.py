@@ -20,7 +20,7 @@ import random
 #     return rand
 
 def new_rand(applicants_list: list):
-    rand_list = [14, 21, 22, 23, 24, 26, 27]
+    rand_list = [1, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24]
     random.shuffle(rand_list)
     return rand_list
 

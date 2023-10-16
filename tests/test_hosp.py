@@ -23,11 +23,26 @@ def test_get_all_hospitals(authorized_client, test_user, create_hospitals_list):
 #     res = authorized_client.get(f'/hosps?search={search}/')
     # print(res.json())
 
+def test_unauthorized_user_get_one_hosp(client, test_user, create_hospitals_list):
+    """Testing whether an authorized user can retrieve one hospital."""
+    res = client.get(f'/hosps/{create_hospitals_list[0].id}')
+    print(res.json())
+    assert res.status_code == 401
+
+
 def test_authorized_user_get_one_hosp(authorized_client, test_user, create_hospitals_list):
-    """Testing whether an authorized user can retrieve one pt."""
+    """Testing whether an authorized user can retrieve one hospital."""
     res = authorized_client.get(f'/hosps/{create_hospitals_list[0].id}')
     print(res.json())
     assert res.status_code == 200
+
+
+def test_authorized_request_nonexitent_hosp(authorized_client, test_user, create_hospitals_list):
+    """Testing an unauthorized user requests a non-existent hosital."""
+    res = authorized_client.get(f'hosps/112265')
+    print(res.json())
+    assert res.status_code == 404
+
 
 def test_unauthorized_user_get_one_hosp(client, test_user, create_hospitals_list):
     # Bug here cause I am not getting the expected error message though test passes.
@@ -65,7 +80,7 @@ def test_admin_add_new_hosp(authorized_client_admin, test_user_admin, create_hos
 
 
 def test_admin_new_hosp_exists(authorized_client_admin, test_user_admin, create_hospitals_list):
-    """ Test admin adding a new hospital whch already exists to the db. """
+    """ Test admin adding a new hospital which already exists to the db. """
     new_hosp = {
         'name': 'CGRH',
         'county_name': 'Mombasa',
