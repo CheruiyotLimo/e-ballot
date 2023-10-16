@@ -1,5 +1,5 @@
 from .db import Base
-from sqlalchemy import Column, Integer, String, TIMESTAMP, ForeignKey
+from sqlalchemy import Column, Integer, String, TIMESTAMP, ForeignKey, Boolean
 from sqlalchemy.sql.expression import text, null
 
 
@@ -15,6 +15,7 @@ class Users(Base):
     first_choice = Column(Integer, ForeignKey("hosp.id", ondelete="CASCADE"), nullable=True)
     second_choice = Column(Integer, ForeignKey("hosp.id", ondelete="CASCADE"), nullable=True)
     role = Column(String)
+    posted = Column(Boolean, default=False)
 
 class Hospital(Base):
     __tablename__ = "hosp"
@@ -30,4 +31,5 @@ class AssignedHosp(Base):
 
     id = Column(Integer, nullable=False, primary_key=True)
     name = Column(String, nullable=False)
+    email = Column(String, nullable= False, unique=True)
     hosp_name = Column(String, nullable=False)

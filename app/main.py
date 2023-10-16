@@ -20,12 +20,12 @@ async def root():
     return {"message": "The pathway to your internship future."}
 
 
-@app.get("/call-root")
-async def call_root(current_user: int = Depends(oauth2.get_current_user), db: Session = (Depends(get_db)), limit: int = 10, skip: int = 0, search: Optional[str] = ""):
+# @app.get("/call-root")
+# async def call_root(current_user: int = Depends(oauth2.get_current_user), db: Session = (Depends(get_db)), limit: int = 10, skip: int = 0, search: Optional[str] = ""):
     
-    choice_1 = {"first_choice": 5}
-    choice_2 = {"first_choice": 2}
+#     choice_1 = {"first_choice": 5}
+#     choice_2 = {"first_choice": 2}
 
-    return users.patch_user(user_data=choice_1, user_id=26, current_user=current_user, db=db)
+#     return users.patch_user(user_data=choice_1, user_id=26, current_user=current_user, db=db)
 
     return "Success!!!!!"
