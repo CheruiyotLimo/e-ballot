@@ -22,6 +22,8 @@ router = APIRouter(
 
 Rounds = Literal[1, 2]
 
+second_round_list = []
+final_round_list = []
 
 
 
@@ -33,7 +35,7 @@ def first_round(select_round: Rounds, db: Session = Depends(get_db), current_use
     oauth2.verify_admin(current_user)
 
     # Get all registered users in a list
-    user_list = users.get_users(db=db, current_user=current_user)
+    user_list = users.get_all_users(db=db, current_user=current_user)
 
     # print(current_user.email)
     if not user_list:
@@ -42,55 +44,103 @@ def first_round(select_round: Rounds, db: Session = Depends(get_db), current_use
     # Access user ids from randomizer scripts
     # Need a statement to loop through the options.
     
-    # while user_list:
-    for id in randomizer.new_rand(user_list):
-
-        user = db.query(models.Users).filter(models.Users.id == id)
-
-        print(id) 
-        if not user.first():
-            continue
-
-        if not user.first().first_choice:
-            continue
-
-        # Check user choice based on round of selection
+    # New sorting logic
+    while user_list:
+        curr_user = random.choice(user_list)
+        
+         # Check user choice based on round of selection
         if select_round == 1:
-            user_choice = user.first().first_choice
+            user_choice = curr_user.first_choice
         elif select_round == 2:
-            user_choice = user.first().second_choice
-        print(user_choice)
-
+            user_choice = curr_user.second_choice
+        print(f"{curr_user.name}'s choice is: {user_choice}")
+        
         # Query the hospital db for the hospital
         hospital = hosp.get_one_hospital(id=user_choice, current_user=current_user, db=db)
         
-        # If hospital has no slots, nullify user's choice
-            
-    
         if hospital and hospital.slots >= 1:
+            
             # Update hospital slots
             new_slots = {"slots": hospital.slots-1}
             json_obj = json.dumps(new_slots)
             new_slots = json.loads(json_obj)
             hosp.patch_hospital_slots(hosp=new_slots, hosp_id=user_choice, current_user=current_user, db=db)
-            
-            # Patch user_choice column
-            if select_round == 1:
-                deprecated_choice = {"first_choice": None, "second_choice": None}
-            elif select_round == 2:
-                deprecated_choice = {"first_choice": None, "second_choice": None}
-            users.patch_user(user_data=deprecated_choice, user_id=user.first().id, current_user=current_user, db=db)
 
             # Update the new assigned hospital db
-            allocated_user = {"name": user.first().name, "hosp_name": hospital.name}
+            allocated_user = {"name": curr_user.name, "hosp_name": hospital.name, "email": curr_user.email}
             final.add_to_final_list(entry=allocated_user, current_user=current_user, db=db)
+            
+            # Update user posted status
+            posted_status = {'posted': True}
+            users.update_posted(posted_status, user_id=curr_user.id, db=db, current_user=current_user)
+            
+            ##### I AM HERE!!!
+            
+            user_list.remove(curr_user)
 
             print(f"Allocated {allocated_user['name']} to {allocated_user['hosp_name']} in round {select_round}")
+            
         else:
             print(f"{hospital.name} is out of slots.")
+            user_list.remove(curr_user)
+            
             # Remove hosp from the db
             # hosp.delete_hospital(hosp_id=user_choice, current_user=current_user, db=db)
         time.sleep(1)   
+    
+
+            
+        
+    
+    # # while user_list:
+    # for id in randomizer.new_rand(user_list):
+
+    #     user = db.query(models.Users).filter(models.Users.id == id)
+
+    #     print(id) 
+    #     if not user.first():
+    #         continue
+
+    #     if not user.first().first_choice:
+    #         continue
+
+    #     # Check user choice based on round of selection
+    #     if select_round == 1:
+    #         user_choice = user.first().first_choice
+    #     elif select_round == 2:
+    #         user_choice = user.first().second_choice
+    #     print(user_choice)
+
+    #     # Query the hospital db for the hospital
+    #     hospital = hosp.get_one_hospital(id=user_choice, current_user=current_user, db=db)
+        
+    #     # If hospital has no slots, nullify user's choice
+            
+    
+    #     if hospital and hospital.slots >= 1:
+    #         # Update hospital slots
+    #         new_slots = {"slots": hospital.slots-1}
+    #         json_obj = json.dumps(new_slots)
+    #         new_slots = json.loads(json_obj)
+    #         hosp.patch_hospital_slots(hosp=new_slots, hosp_id=user_choice, current_user=current_user, db=db)
+            
+    #         # Patch user_choice column
+    #         if select_round == 1:
+    #             deprecated_choice = {"first_choice": None, "second_choice": None}
+    #         elif select_round == 2:
+    #             deprecated_choice = {"first_choice": None, "second_choice": None}
+    #         users.patch_user(user_data=deprecated_choice, user_id=user.first().id, current_user=current_user, db=db)
+
+    #         # Update the new assigned hospital db
+    #         allocated_user = {"name": user.first().name, "hosp_name": hospital.name}
+    #         final.add_to_final_list(entry=allocated_user, current_user=current_user, db=db)
+
+    #         print(f"Allocated {allocated_user['name']} to {allocated_user['hosp_name']} in round {select_round}")
+    #     else:
+    #         print(f"{hospital.name} is out of slots.")
+    #         # Remove hosp from the db
+    #         # hosp.delete_hospital(hosp_id=user_choice, current_user=current_user, db=db)
+    #     time.sleep(1)   
     
     
     # user.delete(synchronize_session=False)
@@ -98,7 +148,7 @@ def first_round(select_round: Rounds, db: Session = Depends(get_db), current_use
     #     # Remove hosp from db if slots
 
     
-    return user_list
+    # return user_list
 
 
 
@@ -109,31 +159,38 @@ def final_pass(current_user: int = Depends(oauth2.get_current_user), db: Session
     oauth2.verify_admin(current_user)
 
     # Needs a loop to account for all unselected applicants
-    all_users = db.query(models.Users).filter(models.Users.role == None, models.Users.first_choice != None, models.Users.second_choice!=None).all()
+    all_users = users.get_all_users(db=db, current_user=current_user)
     print(len(all_users))
+    
     while all_users:
-        # select a random user
-        # user = db.query(models.Users).order_by(func.random())
-        user = all_users[random.randint(0, len(all_users))-1]
-        # print(user.first())
-        # select a random hospital
-        hospital = db.query(models.Hospital).order_by(func.random())
+        curr_user = random.choice(all_users)
 
-        if hospital.first().slots >= 1:
+        # select a random hospital
+        all_hosps = hosp.get_all_hospitals(current_user=current_user, db=db)
+        
+        hospital = random.choice(all_hosps)
+
+        if hospital.slots >= 1:
             # Update hospital slots
-            new_slots = {"slots": hospital.first().slots-1}
+            new_slots = {"slots": hospital.slots-1}
             json_obj = json.dumps(new_slots)
             new_slots = json.loads(json_obj)
-            hosp.patch_hospital_slots(hosp=new_slots, hosp_id=hospital.first().id, current_user=current_user, db=db)
+            hosp.patch_hospital_slots(hosp=new_slots, hosp_id=hospital.id, current_user=current_user, db=db)
             
             # Update the new assigned hospital db
-            allocated_user = {"name": user.name, "hosp_name": hospital.first().name}
+            allocated_user = {"name": curr_user.name, "hosp_name": hospital.name, "email": curr_user.email}
             final.add_to_final_list(entry=allocated_user, current_user=current_user, db=db)
+            
+            # Update user posted status
+            posted_status = {'posted': True}
+            users.update_posted(posted_status, user_id=curr_user.id, db=db, current_user=current_user)
 
             # Delete the user from the all_users list
-            all_users.remove(user)       
+            all_users.remove(curr_user)       
         else:
-            print(f"{hospital.first().name} is out of slots.")
+            print(f"{hospital.name} is out of slots.")
+            all_hosps.remove(hospital)
+        time.sleep(1)
 
 
 @router.get("/", status_code=status.HTTP_201_CREATED)
@@ -141,15 +198,15 @@ def magic_maker(current_user: int = Depends(oauth2.get_current_user), db: Sessio
     
     # First phase
     first_round(select_round=1, current_user=current_user, db=db)
-    print("Done with round 1.")
+    print("\nDone with round 1.")
     time.sleep(2)
 
     # Second phase
     first_round(select_round=2, current_user=current_user, db=db)
-    print("Done with round 2.")
+    print("\nDone with round 2.")
     time.sleep(2)
 
     # Final phase
     final_pass(current_user=current_user, db=db)
-    return "Successfully allocated hospitals."
+    return "\nSuccessfully allocated hospitals."
     
