@@ -60,7 +60,8 @@ class HospUpdate(BaseModel):
 
 class FinalCreate(BaseModel):
     name: str
+    email: str
     hosp_name: str
 
-# class UserUpdateTwo(BaseModel):
-#     choice:
+class UserUpdatePosted(BaseModel):
+    posted: bool
