@@ -83,19 +83,19 @@ def add_hospital(hosp_data: schemas.HospCreate, db: Session = Depends(get_db), c
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Hospital already exists.")
     
     # Convert the dictionary to a model dictionary
-    new_hosp = models.Hospital(**hosp_data.dict())
+    # hosp_data = models.Hospital(**hosp_data.dict())
 
     # Add new hospital to the database
-    db.add(new_hosp)
+    db.add(hosp_data)
     db.commit()
-    db.refresh(new_hosp)
+    db.refresh(hosp_data)
 
     return hosp_data
 
 @router.patch("/{hosp_id}", status_code=status.HTTP_201_CREATED)
 def patch_hospital_slots(hosp: schemas.HospUpdate, hosp_id: int, current_user: int = Depends(oauth2.get_current_user), db: Session = Depends(get_db)):
     """Patch request to update the number of slots available in a hospital"""
-
+    ### ***** This is the one in use
     # Verify user is an admin
     oauth2.verify_admin(current_user)
 
@@ -106,7 +106,7 @@ def patch_hospital_slots(hosp: schemas.HospUpdate, hosp_id: int, current_user: i
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Hospital with id: {hosp_id} doesnt exist")
     
     # Update the hospital slots
-    hospital.update(hosp.dict(), synchronize_session=False)  ## Interesting bug here. When I use hosp.dict(), it runs fine on Postman dn tests but fails on use from the admin magic_maker file and vice versa
+    hospital.update(hosp, synchronize_session=False)  ## Interesting bug here. When I use hosp.dict(), it runs fine on Postman dn tests but fails on use from the admin magic_maker file and vice versa
     db.commit()
 
     return hospital.first()
@@ -128,3 +128,31 @@ def delete_hospital(hosp_id: int, current_user = Depends(oauth2.get_current_user
     hospital.delete(synchronize_session=False)
     db.commit()
     return {"Message": "Successfully deleted hospital"}
+
+@router.post('/build/', status_code=status.HTTP_201_CREATED)
+def build_hosps(current_user: int = Depends(oauth2.get_current_user), db: Session = Depends(get_db)):
+
+    # verify the user is an admin
+    oauth2.verify_admin(current_user)
+
+    hosp_list = {
+        "KNH": ["Kenyatta National Hospital", "Nairobi", "47", 3],
+        "MTRH": ['Moi Teaching & Referral Hospital', 'Uasin Gishu', '27', 2],
+        'NPGH': ['Nakuru Provincial General Hospital', 'Nakuru', '32', 1],
+        'CGRH': ['Coast General Referral Hospital', 'Mombasa', '1', 2],
+        'KRH': ['Thika Level V', 'Kiambu', '22', 2],
+        'Mbagathi': ['Mbagathi Hospital', 'Nairobi', '47', 1]
+    }
+
+    for _, v in hosp_list.items():
+        hosp = {
+            'name': v[0],
+            'county_name': v[1],
+            'county_num': v[2],
+            'slots': v[3]
+        }
+
+        hosp = models.Hospital(**hosp)
+
+        add_hospital(hosp_data=hosp, db=db, current_user=current_user)
+    return 'Successfully built all hospitals!'
