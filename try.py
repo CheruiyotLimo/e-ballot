@@ -1,3 +1,7 @@
-st = [5, 5,6,6,2, 20]
+import random
+st = [1, 3, 5, 6, 7, 8]
 
-print(st.index(20))
+st.remove(3)
+st.remove(5)
+
+print(st)
