@@ -12,6 +12,7 @@ class UserCreate(BaseModel):
     first_choice: Optional[int] = None
     second_choice: Optional[int] = None
     role: Optional[str] = None
+    posted: Optional[str] = None
 
 class UserReturn(BaseModel):
     id: str
@@ -65,3 +66,10 @@ class FinalCreate(BaseModel):
 
 class UserUpdatePosted(BaseModel):
     posted: bool
+    
+class AllocHosp(BaseModel):
+    name: str
+    email: str
+    first_choice: Optional[Union[int, str]] = None
+    second_choice: Optional[Union[int, str]] = None
+    alloc_hosp: Optional[Union[int, str]] = None

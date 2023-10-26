@@ -33,3 +33,13 @@ class AssignedHosp(Base):
     name = Column(String, nullable=False)
     email = Column(String, nullable= False, unique=True)
     hosp_name = Column(String, nullable=False)
+    
+class AnalysisTble(Base):
+    __tablename__='analysistable'
+    
+    id = Column(Integer, nullable=False, primary_key=True)
+    name = Column(String, nullable=False)
+    email = Column(String, nullable= False, unique=True)
+    first_choice = Column(Integer, ForeignKey("hosp.id", ondelete="CASCADE"), nullable=True)
+    second_choice = Column(Integer, ForeignKey("hosp.id", ondelete="CASCADE"), nullable=True)
+    alloc_hosp = Column(Integer, ForeignKey("hosp.id", ondelete="CASCADE"), nullable=False)

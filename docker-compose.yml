@@ -1,0 +1,27 @@
+version: '3'
+services:
+  elixr-ballot:
+    build: .
+    ports:
+      - 8000:8000
+    environment:
+      - DATABASE_HOSTNAME = postgres
+      - DATABASE_PASSWORD = password
+      - DATABASE_PORT = 5432
+      - DATABASE_USERNAME = postgres
+      - DATABASE_NAME = ballot
+      - SECRET_KEY = 01vsdasdw866&8sghk89pttes7a82vh2i2osef8hb5swrt2366lp8if2s2a5s899a4
+      - ALGORITHM = HS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES = 5
+      - ADMIN_REG = admin786530
+  
+  postgres:
+    image: postgres
+    environment:
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=ballot
+    volumes:
+      - postgres-db:/var/lib/postgresql/data
+    
+volumes:
+  postgres-db:

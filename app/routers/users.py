@@ -38,8 +38,8 @@ def register_user(data: schemas.UserCreate, db: Session = Depends(get_db)):
     """Sign up a user to the system."""
     # Verify it is a valid email address
     
-    if not scripts.email_verifier(data.email):
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="The email provided is not a valid email address")
+    # if not scripts.email_verifier(data.email):
+    #     raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="The email provided is not a valid email address")
 
     # Check if provided email and/or registration number exists in database
     user_email = db.query(models.Users).filter(models.Users.email == data.email)
@@ -95,6 +95,7 @@ def choose_hospital(user_data: schemas.UserUpdate, choice: CHOICE, db: Session =
     """PATCH request to update each user's choice.
        To be utilized by the client.
     """
+    ## CURRENTLY IN USE
     # QUery the db for the user
     user = db.query(models.Users).filter(models.Users.id == current_user.id)
  

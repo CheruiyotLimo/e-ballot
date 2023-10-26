@@ -70,12 +70,14 @@ def first_round(select_round: Rounds, db: Session = Depends(get_db), current_use
             allocated_user = {"name": curr_user.name, "hosp_name": hospital.name, "email": curr_user.email}
             final.add_to_final_list(entry=allocated_user, current_user=current_user, db=db)
             
+            # Update analysis table
+            allot_user = {'name': curr_user.name, 'email': curr_user.email, 'first_choice': curr_user.first_choice, 'second_choice': curr_user.second_choice, 'alloc_hosp': hospital.id}
+            final.gen_analysis(entry=allot_user, current_user=current_user, db=db)
+            
             # Update user posted status
             posted_status = {'posted': True}
             users.update_posted(posted_status, user_id=curr_user.id, db=db, current_user=current_user)
-            
-            ##### I AM HERE!!!
-            
+
             user_list.remove(curr_user)
 
             print(f"Allocated {allocated_user['name']} to {allocated_user['hosp_name']} in round {select_round}")
@@ -86,7 +88,7 @@ def first_round(select_round: Rounds, db: Session = Depends(get_db), current_use
             
             # Remove hosp from the db
             # hosp.delete_hospital(hosp_id=user_choice, current_user=current_user, db=db)
-        time.sleep(1)   
+        # time.sleep(1)   
     
 
             
@@ -166,8 +168,8 @@ def final_pass(current_user: int = Depends(oauth2.get_current_user), db: Session
         curr_user = random.choice(all_users)
 
         # select a random hospital
-        all_hosps = hosp.get_all_hospitals(current_user=current_user, db=db)
-        
+        # all_hosps = hosp.get_all_hospitals(current_user=current_user, db=db)
+        all_hosps = db.query(models.Hospital).filter(models.Hospital.slots >= 1).all()
         hospital = random.choice(all_hosps)
 
         if hospital.slots >= 1:
@@ -180,6 +182,10 @@ def final_pass(current_user: int = Depends(oauth2.get_current_user), db: Session
             # Update the new assigned hospital db
             allocated_user = {"name": curr_user.name, "hosp_name": hospital.name, "email": curr_user.email}
             final.add_to_final_list(entry=allocated_user, current_user=current_user, db=db)
+            
+            # Update analysis table
+            allot_user = {'name': curr_user.name, 'email': curr_user.email, 'first_choice': curr_user.first_choice, 'second_choice': curr_user.second_choice, 'alloc_hosp': hospital.id}
+            final.gen_analysis(entry=allot_user, current_user=current_user, db=db)
             
             # Update user posted status
             posted_status = {'posted': True}
@@ -208,5 +214,5 @@ def magic_maker(current_user: int = Depends(oauth2.get_current_user), db: Sessio
 
     # Final phase
     final_pass(current_user=current_user, db=db)
-    return "\nSuccessfully allocated hospitals."
+    return "Successfully allocated hospitals."
     

@@ -28,3 +28,17 @@ def add_to_final_list(entry: schemas.FinalCreate, current_user: int = Depends(oa
     db.refresh(new_entry)
     return new_entry
 
+@router.post('/exp', status_code=status.HTTP_201_CREATED)
+def gen_analysis(entry: schemas.AllocHosp, current_user: int = Depends(oauth2.get_current_user), db: Session = Depends(get_db)):
+    
+    # Verify user is an admin
+    oauth2.verify_admin(current_user)
+
+    # Convert provided dictionary into a model dictionary.
+    new_entry = models.AnalysisTble(**entry)
+
+    # Update the assigned hosp db
+    db.add(new_entry)
+    db.commit()
+    db.refresh(new_entry)
+    return new_entry
