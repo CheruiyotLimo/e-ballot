@@ -59,7 +59,7 @@ def register_user(data: schemas.UserCreate, db: Session = Depends(get_db)):
     data.password = new_password
 
     # Convert provided dictionary into a model dictionary.
-    # data = models.Users(**data.dict())
+    data = models.Users(**data.dict())
 
     # Add user to the database.
     db.add(data)
