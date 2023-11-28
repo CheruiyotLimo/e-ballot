@@ -67,7 +67,7 @@ def choose_hospital(hosp: schemas.UserUpdate, hosp_id: int, current_user: int = 
     return f"You chose {choice.first().name}"
 
   
-@router.post("/", response_model=schemas.HospReturn, status_code=status.HTTP_201_CREATED)
+@router.post("/", status_code=status.HTTP_201_CREATED)
 def add_hospital(hosp_data: schemas.HospCreate, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
     """ POST request for updating the hospital database"""
 
@@ -83,13 +83,14 @@ def add_hospital(hosp_data: schemas.HospCreate, db: Session = Depends(get_db), c
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Hospital already exists.")
     
     # Convert the dictionary to a model dictionary
-    # hosp_data = models.Hospital(**hosp_data.dict())
+    hosp_data = models.Hospital(**hosp_data.dict())
 
     # Add new hospital to the database
     db.add(hosp_data)
     db.commit()
     db.refresh(hosp_data)
-
+    print(type(hosp_data))
+    print(hosp_data)
     return hosp_data
 
 @router.patch("/{hosp_id}", status_code=status.HTTP_201_CREATED)
@@ -106,7 +107,7 @@ def patch_hospital_slots(hosp: schemas.HospUpdate, hosp_id: int, current_user: i
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Hospital with id: {hosp_id} doesnt exist")
     
     # Update the hospital slots
-    hospital.update(hosp, synchronize_session=False)  ## Interesting bug here. When I use hosp.dict(), it runs fine on Postman dn tests but fails on use from the admin magic_maker file and vice versa
+    hospital.update(hosp.dict(), synchronize_session=False)  ## Interesting bug here. When I use hosp.dict(), it runs fine on Postman dn tests but fails on use from the admin magic_maker file and vice versa
     db.commit()
 
     return hospital.first()
