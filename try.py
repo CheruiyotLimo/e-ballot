@@ -7,9 +7,6 @@ count = 0
 checked = set()
     
 for index, row in df.iterrows():
-    if count < 1 and 'Mba' not in row['Internship Training Centre']:
-        print(row['Internship Training Centre'])
+    if isinstance(row['Internship Training Centre'], str) and 'Nazareth' in row['Internship Training Centre']:
+        print(row['Name'], row['Phone'])
         
-        count+=1
-    else:
-        break
