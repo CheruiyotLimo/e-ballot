@@ -58,7 +58,7 @@ def test_hosp_doesnt_exist(authorized_client, test_user, create_hospitals_list):
     assert res.status_code == 404
 
 def test_admin_add_new_hosp(authorized_client_admin, test_user_admin, create_hospitals_list):
-    """ Test admin adding a new hosppital to the db. """
+    """ Test admin adding a new hospital to the db. """
     new_hosp = {
         'name': 'Vihiga CRH',
         'county_name': 'Vihiga',
