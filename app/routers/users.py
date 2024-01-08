@@ -4,7 +4,9 @@ from sqlalchemy.orm import Session
 from .. import models, schemas, utils, oauth2, config
 from Scripts import scripts, county_validator
 from typing import Literal
-import json
+from PIL import Image
+import json, io
+
 
 CHOICE = Literal["1", "2"]
 
@@ -142,6 +144,34 @@ def update_posted(posted_status: schemas.UserUpdatePosted, user_id: int, db: Ses
     user.update(posted_status, synchronize_session=False)
     return "Succesfully updated posted status"
     
+
+@router.get("/allocation/", status_code=status.HTTP_200_OK)
+def get_hospital_allocation(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
+    """Gets the allocation details of a user.
+
+    Args:
+        db (Session, optional): _description_. Defaults to Depends(get_db).
+        current_user (int, optional): _description_. Defaults to Depends(oauth2.get_current_user).
+
+    Returns:
+        _type_: _description_
+    """
+    # Verify current user
+    if not current_user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="You need to log in.")
+
+    # Get current user allocation
+    alloc_details = db.query(models.AssignedHosp).filter(models.AssignedHosp.name == current_user.name)
+    
+    if not alloc_details.first():
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='You have not been allocated yet!')
+    
+    new_details = alloc_details.first()
+    byte_data = new_details.qrcode
+    image = Image.open(io.BytesIO(byte_data))
+    new_details.qrcode = image
+    
+    return new_details
 
 @router.post('/build/', status_code=status.HTTP_201_CREATED)
 def build_users(current_user: int = Depends(oauth2.get_current_user), db: Session = Depends(get_db)):

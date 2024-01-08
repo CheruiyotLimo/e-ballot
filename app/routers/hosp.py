@@ -29,7 +29,7 @@ def get_all_hospitals(current_user: int = Depends(oauth2.get_current_user), db: 
 def get_one_hospital(id: int, current_user: int = Depends(oauth2.get_current_user), db: Session = (Depends(get_db))):
     """Get a single hospital by id."""
     
-    #Verify current user
+    # Verify current user
     if not current_user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="You need to log in.")
 
@@ -107,7 +107,7 @@ def patch_hospital_slots(hosp: schemas.HospUpdate, hosp_id: int, current_user: i
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Hospital with id: {hosp_id} doesnt exist")
     
     # Update the hospital slots
-    hospital.update(hosp.dict(), synchronize_session=False)  ## Interesting bug here. When I use hosp.dict(), it runs fine on Postman dn tests but fails on use from the admin magic_maker file and vice versa
+    hospital.update(hosp, synchronize_session=False)  ## Interesting bug here. When I use hosp.dict(), it runs fine on Postman dn tests but fails on use from the admin magic_maker file and vice versa
     db.commit()
 
     return hospital.first()

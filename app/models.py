@@ -1,5 +1,5 @@
 from .db import Base
-from sqlalchemy import Column, Integer, String, TIMESTAMP, ForeignKey, Boolean
+from sqlalchemy import Column, Integer, String, TIMESTAMP, ForeignKey, Boolean, LargeBinary
 from sqlalchemy.sql.expression import text, null
 
 
@@ -33,6 +33,8 @@ class AssignedHosp(Base):
     name = Column(String, nullable=False)
     email = Column(String, nullable= False, unique=True)
     hosp_name = Column(String, nullable=False)
+    serial_number = Column(String, nullable=False)
+    qrcode = Column(LargeBinary)
     
 class AnalysisTble(Base):
     __tablename__='analysistable'

@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from .. import models, schemas, utils, oauth2
 from fastapi.security import OAuth2PasswordRequestForm
 import requests
-from Scripts import randomizer
+from Scripts import randomizer, serializer, qrcode
 from . import hosp, users, auth, final
 import json, time
 from typing import Literal
@@ -65,9 +65,15 @@ def first_round(select_round: Rounds, db: Session = Depends(get_db), current_use
             json_obj = json.dumps(new_slots)
             new_slots = json.loads(json_obj)
             hosp.patch_hospital_slots(hosp=new_slots, hosp_id=user_choice, current_user=current_user, db=db)
+            
+            # Generate serial number
+            serial_number = serializer.generate_alphanumeric_sequence()
+            
+            # Generate a qrcode
+            qrcode_binary = qrcode.qrcode_generator(curr_user.name, hospital.name, serial_number)
 
             # Update the new assigned hospital db
-            allocated_user = {"name": curr_user.name, "hosp_name": hospital.name, "email": curr_user.email}
+            allocated_user = {"name": curr_user.name, "hosp_name": hospital.name, "email": curr_user.email, "serial_number": serial_number, 'qrcode': qrcode_binary}
             final.add_to_final_list(entry=allocated_user, current_user=current_user, db=db)
             
             # Update analysis table
@@ -179,8 +185,15 @@ def final_pass(current_user: int = Depends(oauth2.get_current_user), db: Session
             new_slots = json.loads(json_obj)
             hosp.patch_hospital_slots(hosp=new_slots, hosp_id=hospital.id, current_user=current_user, db=db)
             
+            # Generate serial number
+            serial_number = serializer.generate_alphanumeric_sequence()
+            
+            # Generate a qrcode
+            qrcode_binary = qrcode.qrcode_generator(curr_user.name, hospital.name, serial_number)
+
+            
             # Update the new assigned hospital db
-            allocated_user = {"name": curr_user.name, "hosp_name": hospital.name, "email": curr_user.email}
+            allocated_user = {"name": curr_user.name, "hosp_name": hospital.name, "email": curr_user.email, "serial_number": serial_number, 'qrcode': qrcode_binary}
             final.add_to_final_list(entry=allocated_user, current_user=current_user, db=db)
             
             # Update analysis table
@@ -196,7 +209,7 @@ def final_pass(current_user: int = Depends(oauth2.get_current_user), db: Session
         else:
             print(f"{hospital.name} is out of slots.")
             all_hosps.remove(hospital)
-        time.sleep(1)
+        # time.sleep(1)
 
 
 @router.get("/", status_code=status.HTTP_201_CREATED)

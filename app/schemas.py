@@ -63,6 +63,8 @@ class FinalCreate(BaseModel):
     name: str
     email: str
     hosp_name: str
+    serial_number: str
+    qrcode: bytes
 
 class UserUpdatePosted(BaseModel):
     posted: bool
